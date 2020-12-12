@@ -6,7 +6,7 @@ use std::str::FromStr;
 fn read_file() -> String {
     let file = File::open("input/day1.txt").unwrap();
     let mut str = String::new();
-    BufReader::new(file).read_to_string(&mut str);
+    BufReader::new(file).read_to_string(&mut str).unwrap();
     str
 }
 
