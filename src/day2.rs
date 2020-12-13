@@ -25,9 +25,16 @@ fn required_wrapping(l: u32, w: u32, h: u32) -> u32 {
     2 * l * w + 2 * w * h + 2 * h * l + min_side1 * min_side2
 }
 
+fn required_ribbon(l: u32, w: u32, h: u32) -> u32 {
+    let mut sides = [l, w, h];
+    sides.sort();
+    let (min_side1, min_side2) = sides.iter().take(2).collect_tuple().unwrap();
+    2 * min_side1 + 2 * min_side2 + l * w * h
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::day2::{parse_lines, read_file, required_wrapping};
+    use crate::day2::{parse_lines, read_file, required_ribbon, required_wrapping};
 
     #[test]
     fn part1_examples() {
@@ -39,6 +46,19 @@ mod tests {
     fn part1() {
         let input = parse_lines(read_file());
         let res: u32 = input.map(|(l, w, h)| required_wrapping(l, w, h)).sum();
+        println!("{}", res);
+    }
+
+    #[test]
+    fn part2_examples() {
+        assert_eq!(34, required_ribbon(2, 3, 4));
+        assert_eq!(14, required_ribbon(1, 1, 10));
+    }
+
+    #[test]
+    fn part2() {
+        let input = parse_lines(read_file());
+        let res: u32 = input.map(|(l, w, h)| required_ribbon(l, w, h)).sum();
         println!("{}", res);
     }
 }
