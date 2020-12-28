@@ -1,9 +1,3 @@
-use itertools::Itertools;
-use std::collections::HashSet;
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::iter::FromIterator;
-
 fn find_hash_with_prefix(key: &str, start: u64, prefix: &str) -> u64 {
     (start..u64::max_value())
         .find(|d| {
