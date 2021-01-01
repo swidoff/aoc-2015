@@ -28,7 +28,7 @@ fn part1(input: &Vec<HashMap<String, u32>>, clues: &HashMap<&str, u32>) -> usize
     input
         .iter()
         .enumerate()
-        .find(|(i, map)| {
+        .find(|(_, map)| {
             map.iter()
                 .all(|(k, v)| *clues.get(k.as_str()).unwrap() == *v)
         })

@@ -137,18 +137,18 @@ HOHOHO
 
     #[test]
     fn test_part2_example() {
-        let (mut rules, molecule) = parse_inputs(EXAMPLE3.lines().map(|s| s.to_string()));
+        let (rules, molecule) = parse_inputs(EXAMPLE3.lines().map(|s| s.to_string()));
         let res = part2(&rules, molecule);
         assert_eq!(Some(3), res);
 
-        let (mut rules, molecule) = parse_inputs(EXAMPLE4.lines().map(|s| s.to_string()));
+        let (rules, molecule) = parse_inputs(EXAMPLE4.lines().map(|s| s.to_string()));
         let res = part2(&rules, molecule);
         assert_eq!(Some(6), res);
     }
 
     #[test]
     fn test_part2() {
-        let (mut rules, molecule) = parse_inputs(read_file());
+        let (rules, molecule) = parse_inputs(read_file());
         let res = part2(&rules, molecule);
         println!("{}", res.unwrap());
         // assert_eq!(Some(3), res);
