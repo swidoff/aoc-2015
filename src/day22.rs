@@ -100,11 +100,15 @@ impl State {
         self.hp1 <= 0
     }
 
-    fn play(&self, spell_index: usize) -> State {
+    fn play(&self, spell_index: usize, hard: bool) -> State {
         let mut s = self.clone();
         for turn in 0..2 {
             let mut arm1 = 0;
-            if s.hp2 > 0 {
+            if hard && turn == 0 {
+                s.hp1 -= 1;
+            }
+
+            if s.hp1 > 0 && s.hp2 > 0 {
                 for i in 0..SPELLS.len() {
                     if s.effects[i] > 0 {
                         let spell = &SPELLS[i];
@@ -145,7 +149,7 @@ impl State {
     }
 }
 
-fn optimize(state: State) -> Option<State> {
+fn optimize(state: State, hard: bool) -> Option<State> {
     if state.player_won() {
         Some(state)
     } else if state.boss_won() {
@@ -155,8 +159,8 @@ fn optimize(state: State) -> Option<State> {
         for spell_index in 0..SPELLS.len() {
             let spell = &SPELLS[spell_index];
             if state.mana1 >= spell.cost && state.effects[spell_index] <= 1 {
-                let new_state = state.play(spell_index);
-                match optimize(new_state) {
+                let new_state = state.play(spell_index, hard);
+                match optimize(new_state, hard) {
                     Some(optimal) => match res.as_ref() {
                         Some(prev_optimal) if optimal.cost < prev_optimal.cost => {
                             res.replace(optimal);
@@ -181,13 +185,13 @@ mod tests {
     #[test]
     fn test_part1_example1() {
         let mut state = State::new(10, 250, 13, 8);
-        state = state.play(3);
+        state = state.play(3, false);
         assert_eq!(2, state.hp1);
         assert_eq!(10, state.hp2);
         assert_eq!(5, state.effects[3]);
         assert_eq!(77, state.mana1);
 
-        state = state.play(0);
+        state = state.play(0, false);
         assert_eq!(2, state.hp1);
         assert_eq!(0, state.hp2);
         assert_eq!(3, state.effects[3]);
@@ -198,33 +202,33 @@ mod tests {
     #[test]
     fn test_part1_example2() {
         let mut state = State::new(10, 250, 14, 8);
-        state = state.play(4);
+        state = state.play(4, false);
         assert_eq!(2, state.hp1);
         assert_eq!(14, state.hp2);
         assert_eq!(4, state.effects[4]);
         assert_eq!(122, state.mana1);
 
-        state = state.play(2);
+        state = state.play(2, false);
         assert_eq!(1, state.hp1);
         assert_eq!(14, state.hp2);
         assert_eq!(2, state.effects[4]);
         assert_eq!(211, state.mana1);
 
-        state = state.play(1);
+        state = state.play(1, false);
         assert_eq!(2, state.hp1);
         assert_eq!(12, state.hp2);
         assert_eq!(3, state.effects[2]);
         assert_eq!(0, state.effects[4]);
         assert_eq!(340, state.mana1);
 
-        state = state.play(3);
+        state = state.play(3, false);
         assert_eq!(1, state.hp1);
         assert_eq!(9, state.hp2);
         assert_eq!(1, state.effects[2]);
         assert_eq!(5, state.effects[3]);
         assert_eq!(167, state.mana1);
 
-        state = state.play(0);
+        state = state.play(0, false);
         assert_eq!(1, state.hp1);
         assert_eq!(-1, state.hp2);
         assert_eq!(0, state.effects[2]);
@@ -236,20 +240,16 @@ mod tests {
     #[test]
     fn test_part1() {
         let mut state = State::new(50, 500, 71, 10);
-        // let spells = vec![2, 4, 3, 2, 4, 3, 2, 4, 3, 2, 0, 3];
-        // for i in [3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 0, 5].iter() {
-        //     state = state.play(*i);
-        // }
-        // println!("{:?}", state);
-        // println!("{:?}", state.player_won());
-        // println!(
-        //     "{}",
-        //     state.spells.iter().map(|i| SPELLS[*i].cost).sum::<i64>()
-        // );
+        let res = optimize(state, false);
+        // println!("{:?}", res.unwrap());
+        assert_eq!(1824, res.unwrap().cost);
+    }
 
-        // let state = State::new(10, 250, 13, 8);
-        // let mut state = State::new(10, 250, 14, 8);
-        let res = optimize(state);
+    #[test]
+    fn test_part2() {
+        let mut state = State::new(50, 500, 71, 10);
+        let res = optimize(state, true);
         println!("{:?}", res.unwrap());
+        // assert_eq!(1824, res.unwrap().cost);
     }
 }
