@@ -57,9 +57,18 @@ const SPELLS: [Spell; 5] = [
         mana: 101,
         turns: 5,
     },
+    // Spell {
+    //     id: "Nothing",
+    //     cost: 0,
+    //     damage: 0,
+    //     heal: 0,
+    //     armor: 0,
+    //     mana: 0,
+    //     turns: 0,
+    // },
 ];
 
-#[derive(Copy, Clone)]
+#[derive(Clone, Debug)]
 struct State {
     hp1: i64,
     mana1: i64,
@@ -67,6 +76,7 @@ struct State {
     dam2: i64,
     effects: [u8; SPELLS.len()],
     cost: i64,
+    spells: Vec<usize>,
 }
 
 impl State {
@@ -78,6 +88,7 @@ impl State {
             dam2,
             effects: [0; SPELLS.len()],
             cost: 0,
+            spells: Vec::new(),
         }
     }
 
@@ -112,6 +123,7 @@ impl State {
                     if s.mana1 >= spell.cost {
                         s.mana1 -= spell.cost;
                         s.cost += spell.cost;
+                        s.spells.push(spell_index);
                         if spell.turns == 0 {
                             s.hp2 -= spell.damage;
                             s.hp1 += spell.heal
@@ -133,9 +145,38 @@ impl State {
     }
 }
 
+fn optimize(state: State) -> Option<State> {
+    if state.player_won() {
+        Some(state)
+    } else if state.boss_won() {
+        None
+    } else {
+        let mut res: Option<State> = None;
+        for spell_index in 0..SPELLS.len() {
+            let spell = &SPELLS[spell_index];
+            if state.mana1 >= spell.cost && state.effects[spell_index] <= 1 {
+                let new_state = state.play(spell_index);
+                match optimize(new_state) {
+                    Some(optimal) => match res.as_ref() {
+                        Some(prev_optimal) if optimal.cost < prev_optimal.cost => {
+                            res.replace(optimal);
+                        }
+                        None => {
+                            res.replace(optimal);
+                        }
+                        _ => {}
+                    },
+                    None => {}
+                }
+            }
+        }
+        res
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::day22::State;
+    use crate::day22::{optimize, State, SPELLS};
 
     #[test]
     fn test_part1_example1() {
@@ -193,5 +234,22 @@ mod tests {
     }
 
     #[test]
-    fn test_part1() {}
+    fn test_part1() {
+        let mut state = State::new(50, 500, 71, 10);
+        // let spells = vec![2, 4, 3, 2, 4, 3, 2, 4, 3, 2, 0, 3];
+        // for i in [3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 0, 5].iter() {
+        //     state = state.play(*i);
+        // }
+        // println!("{:?}", state);
+        // println!("{:?}", state.player_won());
+        // println!(
+        //     "{}",
+        //     state.spells.iter().map(|i| SPELLS[*i].cost).sum::<i64>()
+        // );
+
+        // let state = State::new(10, 250, 13, 8);
+        // let mut state = State::new(10, 250, 14, 8);
+        let res = optimize(state);
+        println!("{:?}", res.unwrap());
+    }
 }
